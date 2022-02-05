@@ -2,14 +2,16 @@
 
 ```
  k3d cluster create argo-wf --api-port 6550 -p "30000-30080:30000-30080@server:0" --agents 2
+
+cat ~/.kube/config
 ```
 
 - [ ] install & configure argo-workflows, minio and rabbitmq on k3d
   - [ ] install argo-workflows
 
 ```
-kubectl create ns argo
-kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/master/manifests/quick-start-postgres.yaml
+kubectl create ns argo-events
+kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-workflows/master/manifests/quick-start-postgres.yaml
 ```
 
 - [ ] install minio
@@ -35,7 +37,7 @@ kubectl patch svc minio -p '{"spec": { "type": "NodePort", "ports": [ {"port":90
 kubectl patch svc rabbitmq -p '{"spec": { "type": "NodePort", "ports": [ {"port":15672, "nodePort": 30005 },{"port":5672, "nodePort": 30004 } ] } }' -n rabbit
 
 //argo
-kubectl patch svc argo-server -p '{"spec": { "type": "NodePort", "ports": [ {"port":2746, "nodePort": 30001 } ] } }' -n argo
+kubectl patch svc argo-server -p '{"spec": { "type": "NodePort", "ports": [ {"port":2746, "nodePort": 30001 } ] } }' -n argo-events
 
 ```
 
