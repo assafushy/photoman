@@ -51,18 +51,24 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/m
 ```
 
 - [ ] setup minio or use argo's
+  - [ ] setup minio and rabbitwords - as env vars
+  ```
+  MINIO_PASS=<minio-password>
+  RABBIT_PASS=<rabbit-password>
+  ```
   - [ ] check mc connection & create bucket
 
 ```
-./mc alias set minio/ http://localhost:30010 <user> <password>
+./mc alias set minio/ http://localhost:30010 admin $MINIO_PASS
 ./mc ls minio
-./mc mb minio new-files
+./mc mb minio/new-files
 ./mc policy set public minio/new-files
 ```
 
 - [ ] check ui connection - localhost:30011
 - [ ] setup rabbit message on add file
 
+  - [ ] check ui connection - localhost:30005
   - [ ] create rabbit exchange for files events
 
     ```
@@ -71,15 +77,15 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/m
       chmod +x rabbitmqadmin
 
     //create exchange + queue and bind them
-    ./rabbitmqadmin declare exchange -H localhost -P 30005 -u user  -p lKMQihjCT7 name=new-file type=direct
-    ./rabbitmqadmin declare queue -H localhost -P 30005 -u user  -p lKMQihjCT7  name=new-files durable=true
-    ./rabbitmqadmin -H localhost -P 30005 -u user  -p lKMQihjCT7 declare binding source="new-file" destination_type="queue" destination="new-files"
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare exchange  name=new-file type=direct durable=false
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare queue  name=new-files durable=true
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare binding source="new-file" destination_type="queue" destination="new-files" routing_key="new-file"
     ```
 
     - [ ] setup minio - endpoint notification - AMQP
 
     ```
-          ./mc admin config set minio notify_amqp:rabbitmq url="amqp://user:lKMQihjCT7@rabbitmq.rabbit.svc.cluster.local:5672" exchange="new-file" exchange_type="direct" durable="false"
+          ./mc admin config set minio notify_amqp:rabbitmq url="amqp://user:<rabbit-password>@rabbitmq.rabbit.svc.cluster.local:5672" exchange="new-file" exchange_type="direct" durable="false" routing_key="new-file"
           ./mc admin service restart minio
     ```
 

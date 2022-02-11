@@ -5,7 +5,7 @@ metadata:
 spec:
   amqp:
     example:
-      url: amqp://rabbitmq.rabbit.svc.cluster.local:5672
+      url: amqp://user:7kPbQGZ80F@rabbitmq.rabbit.svc.cluster.local:5672
       # jsonBody specifies that all event body payload coming from this
       # source will be JSON
       jsonBody: true
@@ -14,7 +14,7 @@ spec:
       # exchange type. more info at https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges
       exchangeType: direct
       # routing key
-      routingKey: all
+      routingKey: "new-file"
       # optional backoff time for connection retries.
       # if not provided, default connection backoff time will be used.
       connectionBackoff:
@@ -38,7 +38,7 @@ spec:
       queueDeclare:
         name: "new-files"
         durable: true
-        autoDelete: false
+        autoDelete: true
         exclusive: true
         noWait: false
       # optional queue binding settings
@@ -55,10 +55,10 @@ spec:
         noWait: false
       # username and password for authentication
       # use secret selectors
-      auth:
-        username:
-          name: rabbit-creds
-          key: username
-        password:
-          name: rabbit-creds
-          key: password
+      # auth:
+      #   username:
+      #     name: rabbit-creds
+      #     key: username
+      #   password:
+      #     name: rabbit-creds
+      #     key: password
