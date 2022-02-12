@@ -34,8 +34,8 @@ def main(argv):
    downloadImageFile(imageUrl)
    #uploading thumbnails
    
-def downloadImageFile(imageFileUrl,destPath="./"):
-   logging.info('Downloading image {}'.format(imageFileUrl))   
+def downloadImageFile(imageBucket,imageFile,destPath="./"):
+   logging.info('Downloading image {}'.format(imageBucket))   
    client = Minio("play.min.io")   # Create client with anonymous access.
    try:
       response = client.get_object("my-bucket", "my-object")
@@ -57,4 +57,4 @@ def createThumbnails():
       cropped_img.save(str(uuid.uuid4())+".jpg")
 
    def downloadImageFile(imageFile,MinioUrl):
-   logging.info('Downloading image {}'.format(imageFile))
+      logging.info('Downloading image {}'.format(imageFile))
