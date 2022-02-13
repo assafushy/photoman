@@ -78,7 +78,7 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/m
 
     //create exchange + queue and bind them
     ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare exchange  name=new-file type=direct durable=false
-    ./rabbitmqadmin -H localhost -P 30005 -u> user  -p $RABBIT_PASS declare queue  name=new-files durable=true
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare queue  name=new-files durable=true
     ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare binding source="new-file" destination_type="queue" destination="new-files" routing_key="new-file"
     ```
 
