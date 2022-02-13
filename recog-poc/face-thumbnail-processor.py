@@ -38,14 +38,14 @@ def main(argv):
    bucketName = pathArray[0]
    objectName=pathArray[1]
    #downloading image file
-   filePath = downloadImageFile(bucketName,objectName,outputDir)
+   filePath = downloadImageFile(bucketName,objectName,minioUrl,outputDir)
    #extracting face thumbnails
    extractThumbnails(filePath,"./thumbnails")
    #uploading thumbnails
-
-def downloadImageFile(imageBucket,imageFile,destPath="."):
+   
+def downloadImageFile(imageBucket,imageFile,minioUrl,destPath="."):
    logging.info('Downloading image {}'.format(imageBucket))   
-   client = Minio("localhost:30010",None,None,None,False)   # Create client with anonymous access.
+   client = Minio(minioUrl,None,None,None,False)   # Create client with anonymous access.
    localFilePath = destPath+"/"+imageFile
    try:
       client.fget_object(imageBucket, imageFile,localFilePath)
@@ -64,9 +64,9 @@ def extractThumbnails(srcPhoto,thumbnailDestFolder):
       cropped_img = img.crop(area)
       cropped_img.save(thumbnailDestFolder + "/" +str(uuid.uuid4())+".jpg")
 
-def uploadThumbnails(destBucket):
+def uploadThumbnails(destBucket,minioUrl):
    logging.info("uploading thumbnails")
-   client = Minio("localhost:30010",None,None,None,False)   # Create client with anonymous access.
+   client = Minio(minioUrl,None,None,None,False)   # Create client with anonymous access.
   #get files list
    #for each file upload
    try:
