@@ -5,12 +5,13 @@ import face_recognition
 import logging
 from minio import Minio
 
+
 def main(argv):
    amqpEvent = ''
    outputDir = ''
    minioUrl=''
    try:
-      opts, args = getopt.getopt(argv,"ae:o:m:",["amqp-event=","output-dir=","minio-url="])
+      opts, args = getopt.getopt(argv,"ae:o:m:h:",["amqp-event=","output-dir=","minio-url=","--help="])
    except getopt.GetoptError:
       print('test.py -i <inputfile> -o <outputfile>')
       sys.exit(2)
@@ -23,38 +24,40 @@ def main(argv):
       elif opt in ("-o", "--output-dir"):
          outputDir = arg
       elif opt in ("-m", "--minio-url"):
-         minioUrl = arg
+         minioUrl = args
+   logging.basicConfig(level=logging.INFO)
    logging.info ('Ampq event  is {} '.format(amqpEvent))
    logging.info ('OutPut dir is  {} '.format(outputDir))
    logging.info ('Minio url is  {} '.format(minioUrl))
 
    #parsing image url for download
    imageUrl = ""
+   #downloading image file
+   filePath = downloadImageFile("new-files","team.png","./srcPhoto")
    #extracting face thumbnails
-   downloadImageFile(imageUrl)
+   extractThumbnails(filePath,"./thumbnails")
    #uploading thumbnails
    
-def downloadImageFile(imageBucket,imageFile,destPath="./"):
+def downloadImageFile(imageBucket,imageFile,destPath="."):
    logging.info('Downloading image {}'.format(imageBucket))   
-   client = Minio("play.min.io")   # Create client with anonymous access.
+   client = Minio("localhost:30010",None,None,None,False)   # Create client with anonymous access.
+   localFilePath = destPath+"/"+imageFile
    try:
-      response = client.get_object("my-bucket", "my-object")
-      # Read data from response.
-   finally:
-      response.close()
-      response.release_conn()
+      client.fget_object(imageBucket, imageFile,localFilePath)
+      return localFilePath
+   except:
+      logging.error("erron downloading photo : {} from bucket {}".format([imageFile,imageBucket]))
 
-
-def createThumbnails():
-   image = face_recognition.load_image_file("target.jpg")
+def extractThumbnails(srcPhoto,thumbnailDestFolder):
+   image = face_recognition.load_image_file(srcPhoto)
    face_locations = face_recognition.face_locations(image)
 
    # crop thumbnails
    for face_location in face_locations:
-      img = Image.open("target.jpg")
+      img = Image.open(srcPhoto)
       area = (face_location[3],face_location[0],face_location[1],face_location[2])
       cropped_img = img.crop(area)
-      cropped_img.save(str(uuid.uuid4())+".jpg")
+      cropped_img.save(thumbnailDestFolder + "/" +str(uuid.uuid4())+".png")
 
-   def downloadImageFile(imageFile,MinioUrl):
-      logging.info('Downloading image {}'.format(imageFile))
+if __name__ == '__main__':
+   main(sys.argv)
