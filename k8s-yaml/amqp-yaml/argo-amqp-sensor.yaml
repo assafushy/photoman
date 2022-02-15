@@ -4,7 +4,7 @@ metadata:
   name: new-files-sensor
 spec:
   template:
-    serviceAccountName: operate-workflow-sa
+    serviceAccountName: argo-sensor-sa
   dependencies:
     - name: new-file-trigger
       eventSourceName: new-files

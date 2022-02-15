@@ -1,3 +1,7 @@
+### Photonix Demo
+  https://photonix.org/?fbclid=IwAR05GHoBsG7jTrS1oit4yjKzjtTSSUZh-TEdB4utJf0JWQJdd3gu7xmcBW0
+
+
 - [x] setup k3d cluster
 
 ```
@@ -18,13 +22,13 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
 
 ```
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install minio  bitnami/minio -n minio --create-namespace
+helm install minio  bitnami/minio -n minio --create-namespace --set auth.rootPassword=Shlonski2712
 ```
 
 - [ ] install rabbitmq
 
 ```
-helm install rabbitmq bitnami/rabbitmq -n rabbit --create-namespace
+helm install rabbitmq bitnami/rabbitmq -n rabbit --create-namespace --set auth.password=pass
 ```
 
 - [ ] expose all services
@@ -48,18 +52,15 @@ kubectl create namespace argo-events
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/manifests/install.yaml
 # Install with a validating admission controller
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/manifests/install-validating-webhook.yaml
+#setup the event buss
+kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-events/stable/examples/eventbus/native.yaml
 ```
 
 - [ ] setup minio or use argo's
-  - [ ] setup minio and rabbitwords - as env vars
-  ```
-  MINIO_PASS=<minio-password>
-  RABBIT_PASS=<rabbit-password>
-  ```
   - [ ] check mc connection & create bucket
 
 ```
-./mc alias set minio/ http://localhost:30010 admin $MINIO_PASS
+./mc alias set minio/ http://localhost:30010 admin Shlonski2712
 ./mc ls minio
 ./mc mb minio/new-files
 ./mc policy set public minio/new-files
@@ -77,16 +78,16 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/m
       chmod +x rabbitmqadmin
 
     //create exchange + queue and bind them
-    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare exchange  name=new-file type=direct durable=false
-    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare queue  name=new-files durable=true
-    ./rabbitmqadmin -H localhost -P 30005 -u user  -p $RABBIT_PASS declare binding source="new-file" destination_type="queue" destination="new-files" routing_key="new-file"
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p pass declare exchange  name=new-file type=direct durable=false
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p pass declare queue  name=new-files durable=true
+    ./rabbitmqadmin -H localhost -P 30005 -u user  -p pass declare binding source="new-file" destination_type="queue" destination="new-files" routing_key="new-file"
     ```
 
     - [ ] setup minio - endpoint notification - AMQP
 
     ```
-          ./mc admin config set minio notify_amqp:rabbitmq url="amqp://user:<rabbit-password>@rabbitmq.rabbit.svc.cluster.local:5672" exchange="new-file" exchange_type="direct" durable="false" routing_key="new-file"
-          ./mc admin service restart minio
+      ./mc admin config set minio notify_amqp:rabbitmq url="amqp://user:pass@rabbitmq.rabbit.svc.cluster.local:5672" exchange="new-file" exchange_type="direct" durable="false" routing_key="new-file"
+      ./mc admin service restart minio
     ```
 
     - [ ] setup minio - set bucket notification
@@ -97,6 +98,20 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-events/stable/m
 
 - [ ] setup argo-workflows to handle new file
 
-```
-
-```
+  - [ ] setup an event source for new files
+  ```
+    kubectl apply -f ./k8s-yaml/amqp-yaml/argo-amqp-eventsource.yaml -n argo-events
+  ```
+  - [ ] configure a service account to handle the event
+  ```
+    //create service account
+    kubectl -n argo-events create sa argo-sensor-sa
+    //create a cluster-role (this case cluster wide)
+    kubectl create clusterrole deployments-watcher --verb=list,watch,create,update,get --resource=deployments.apps,pods,workflows.argoproj.io
+    //bind the cluster role to the service account
+    kubectl create clusterrolebinding deployments-watcher-clusterrole-binding --clusterrole=deployments-watcher --serviceaccount=argo-events:argo-sensor-sa
+  ```
+  - [ ] deploy the event sensor
+  ```
+    kubectl apply  -f ./k8s-yaml/amqp-yaml/argo-amqp-sensor.yaml  -n argo-events
+  ```

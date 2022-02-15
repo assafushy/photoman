@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: EventSource
 metadata:
-  name: new-photos
+  name: new-files
 spec:
   amqp:
-    example:
-      url: amqp://user:7kPbQGZ80F@rabbitmq.rabbit.svc.cluster.local:5672
+    new-files:
+      url: amqp://user:pass@rabbitmq.rabbit.svc.cluster.local:5672
       jsonBody: true
       exchangeName: new-file
       exchangeType: direct
