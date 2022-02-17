@@ -1,0 +1,8 @@
+from python:3.9.10
+WORKDIR /usr/app
+RUN apt update
+RUN apt install cmake -y 
+COPY ./requirements.txt .
+RUN pip install -r  ./requirements.txt
+COPY . .
+CMD ["python3","face-thumbnail-processor.py","-h"]
