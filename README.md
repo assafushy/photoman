@@ -61,9 +61,11 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
 
 ```
 ./mc alias set minio/ http://localhost:30010 admin Shlonski2712
-./mc ls minio
 ./mc mb minio/new-files
 ./mc policy set public minio/new-files
+./mc mb minio/thumbnails
+./mc policy set public minio/thumbnails
+./mc ls minio
 ```
 
 - [ ] check ui connection - localhost:30011

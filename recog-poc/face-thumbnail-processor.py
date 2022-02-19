@@ -46,7 +46,7 @@ def main(argv):
    
 def downloadImageFile(imageBucket,imageFile,minioUrl,destPath="."):
    logging.info('Downloading image {}'.format(imageBucket))   
-   client = Minio(minioUrl,None,None,None,False)   # Create client with anonymous access.
+   client = Minio(minioUrl,None,None,None,securre=False)   # Create client with anonymous access.
    localFilePath = destPath+"/"+imageFile
    try:
       client.fget_object(imageBucket, imageFile,localFilePath)
