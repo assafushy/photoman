@@ -12,7 +12,7 @@ def main(argv):
    outputDir = ''
    minioUrl=''
    try:
-      opts, args = getopt.getopt(argv[1:],"e:o:m:h:",["amqp-event=","output-dir=","minio-url=","--help="])
+      opts, args = getopt.getopt(argv[1:],"e:o:m:h:a:s:",["amqp-event=","output-dir=","minio-url=","--access-key=","--secret-key=","--help="])
    except getopt.GetoptError:
       print('face-thumbnail-processor.py -e <amqp-file-event> -o <outputfile> -m<minio-url>')
       sys.exit(2)
@@ -26,6 +26,10 @@ def main(argv):
          outputDir = arg
       elif opt in ("-m", "--minio-url"):
          minioUrl = arg
+      elif opt in ("-a", "--access-key"):
+         accessKey = arg
+      elif opt in ("-s", "--secret-key"):
+         secretKey = arg
    logging.basicConfig(level=logging.INFO)
    logging.info ('Ampq event  is {} '.format(amqpEvent))
    logging.info ('OutPut dir is  {} '.format(outputDir))
@@ -38,21 +42,22 @@ def main(argv):
    objectName=pathArray[1]
    thumbnailsDir = "./thumbnails"
    #downloading image file
-   filePath = downloadImageFile(bucketName,objectName,minioUrl,outputDir)
+   filePath = downloadImageFile(bucketName,objectName,minioUrl,accessKey,secretKey,outputDir)
    #extracting face thumbnails
    extractThumbnails(filePath,thumbnailsDir)
    #uploading thumbnails
-   uploadThumbnails(thumbnailsDir,"thumbnails",minioUrl)
+   uploadThumbnails(thumbnailsDir,"thumbnails",minioUrl,accessKey,secretKey)
    
-def downloadImageFile(imageBucket,imageFile,minioUrl,destPath="."):
-   logging.info('Downloading image {}'.format(imageBucket))   
-   client = Minio(minioUrl,None,None,None,securre=False)   # Create client with anonymous access.
+def downloadImageFile(imageBucket,imageFile,minioUrl,accessKey,secretKey,destPath="."):
+   logging.info('Downloading image {}'.format(imageFile))   
+   client = Minio(minioUrl,None,secure=False)   # Create client with anonymous access.
    localFilePath = destPath+"/"+imageFile
    try:
       client.fget_object(imageBucket, imageFile,localFilePath)
       return localFilePath
-   except:
-      logging.error("erron downloading photo : {} from bucket {}".format([imageFile,imageBucket]))
+   except Exception as err:
+      logging.error(err)
+      logging.error("error downloading photo :" +imageFile +  " from bucket "+imageBucket)
 
 def extractThumbnails(srcPhoto,thumbnailDestFolder):
    image = face_recognition.load_image_file(srcPhoto)
@@ -65,9 +70,9 @@ def extractThumbnails(srcPhoto,thumbnailDestFolder):
       cropped_img = img.crop(area)
       cropped_img.save(thumbnailDestFolder + "/" +str(uuid.uuid4())+".jpg")
 
-def uploadThumbnails(thumbnailsDir,destBucket,minioUrl):
+def uploadThumbnails(thumbnailsDir,destBucket,minioUrl,accessKey,secretKey):
    logging.info("uploading thumbnails")
-   client = Minio(minioUrl,None,None,None,False)   # Create client with anonymous access.
+   client = Minio(minioUrl,secure=False)   # Create client with anonymous access.
    #get files list
    fileList = os.listdir(thumbnailsDir)
    #for each file upload
