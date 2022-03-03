@@ -48,7 +48,7 @@ def main(argv):
    #uploading thumbnails
    uploadThumbnails(thumbnailsDir,"thumbnails",minioUrl,accessKey,secretKey)
    
-def downloadImageFile(imageBucket,imageFile,minioUrl,accessKey,secretKey,destPath="."):
+def downloadImageFile(imageBucket,imageFile,minioUrl,destPath="."):
    logging.info('Downloading image {}'.format(imageFile))   
    client = Minio(minioUrl,None,secure=False)   # Create client with anonymous access.
    localFilePath = destPath+"/"+imageFile
@@ -70,7 +70,7 @@ def extractThumbnails(srcPhoto,thumbnailDestFolder):
       cropped_img = img.crop(area)
       cropped_img.save(thumbnailDestFolder + "/" +str(uuid.uuid4())+".jpg")
 
-def uploadThumbnails(thumbnailsDir,destBucket,minioUrl,accessKey,secretKey):
+def uploadThumbnails(thumbnailsDir,destBucket,minioUrl):
    logging.info("uploading thumbnails")
    client = Minio(minioUrl,secure=False)   # Create client with anonymous access.
    #get files list
