@@ -34,7 +34,7 @@ spec:
                         - name: message
                     container:
                       imagePullPolicy: Always
-                      image: assafushy/facegnition:test4
+                      image: assafushy/face-recognition:latest
                       command: ["python3"]
                       args:
                         [
@@ -45,10 +45,14 @@ spec:
                           "./src",
                           "-m",
                           "minio.minio.svc.cluster.local:9000",
-                          "-a",
-                          "aa",
-                          "-s",
-                          "pp",
+                          "-d",
+                          "mongodb.mongodb",
+                          "-i",
+                          "30015",
+                          "-u",
+                          "root",
+                          "-p",
+                          "gfObI1tOgE"
                         ]
           parameters:
             - src:
