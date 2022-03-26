@@ -31,6 +31,12 @@ helm install minio  bitnami/minio -n minio --create-namespace --set auth.rootPas
 helm install rabbitmq bitnami/rabbitmq -n rabbit --create-namespace --set auth.password=pass
 ```
 
+- [ ] install mongodb
+
+```
+helm install mongodb bitnami/mongodb -n mongodb --create-namespace --set auth.rootPassword=pass
+```
+
 - [ ] expose all services
 
 ```
@@ -39,6 +45,9 @@ kubectl patch svc minio -p '{"spec": { "type": "NodePort", "ports": [ {"port":90
 
 //rabbitmq
 kubectl patch svc rabbitmq -p '{"spec": { "type": "NodePort", "ports": [ {"port":15672, "nodePort": 30005 },{"port":5672, "nodePort": 30004 } ] } }' -n rabbit
+
+//mongodb
+kubectl patch svc mongodb -p '{"spec": { "type": "NodePort", "ports": [ {"port":27017, "nodePort": 30015 } ] } }' -n mongodb
 
 //argo
 kubectl patch svc argo-server -p '{"spec": { "type": "NodePort", "ports": [ {"port":2746, "nodePort": 30001 } ] } }' -n argo-events
@@ -63,12 +72,14 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
 ./mc alias set minio/ http://localhost:30010 admin Shlonski2712
 ./mc mb minio/new-files
 ./mc policy set public minio/new-files
+./mc mb minio/photos
+./mc policy set public minio/photos
 ./mc mb minio/thumbnails
 ./mc policy set public minio/thumbnails
 ./mc ls minio
 ```
 
-- [ ] check ui connection - localhost:30011
+- [ ] check ui connection - http://localhost:30011
 - [ ] setup rabbit message on add file
 
   - [ ] check ui connection - localhost:30005

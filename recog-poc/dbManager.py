@@ -1,16 +1,23 @@
 import pymongo
 
-client = pymongo.MongoClient('mongodb://root:CQhHT8VXr9@localhost:30006/')
-db = client
-print(db.name)
-# 'test'
-# >>> db.my_collection
-# Collection(Database(MongoClient('localhost', 27017), 'test'), 'my_collection')
-# >>> db.my_collection.insert_one({"x": 10}).inserted_id
-# ObjectId('4aba15ebe23f6b53b0000000')
-# >>> db.my_collection.insert_one({"x": 8}).inserted_id
-# ObjectId('4aba160ee23f6b543e000000')
-# >>> db.my_collection.insert_one({"x": 11}).inserted_id
-# ObjectId('4aba160ee23f6b543e000002')
-# >>> db.my_collection.find_one()
-# {'x': 10, '_id': ObjectId('4aba15ebe23f6b53b0000000')}
+class db_manager:
+    def __init__(self,db_hostname,db_port,db_user,db_password):
+        connection_str = 'mongodb://'+db_user+':'+db_password+'@'+db_hostname+':'+str(db_port)+'/'
+        self.client = pymongo.MongoClient(connection_str,authSource="admin")
+        self.photos_db = self.client.get_database("photos")
+    
+    def register_photo(self,photo_meta):
+        photos_collection = self.photos_db.get_collection("photos")
+        res = photos_collection.insert_one(photo_meta)
+        return res.inserted_id
+    
+    def register_thumbnail(self,thumbnail_meta,photo_meta):
+        photos_collection = self.photos_db.get_collection("thumbnails")
+        res = photos_collection.insert_one(thumbnail_meta)
+        return res.inserted_id
+    
+    def link_thumbnail_to_photo(self,thumbnail_id,photo_id):
+        photos_collection = self.photos_db.get_collection("photos")
+        record_filter = { '_id': photo_id }
+        newvalues = { "$push": { 'thumbnails': thumbnail_id } }
+        photos_collection.update_one(record_filter, newvalues)      
