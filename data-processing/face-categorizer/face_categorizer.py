@@ -10,8 +10,8 @@ import face_recognition
 from datetime import datetime
 
 
-class photo_extraction():
-    def __init__(self,object_name,src_bucket_name,dest_bucket_name,src_download_dir,thumbnails_dir,minio_url,db_manager):
+class face_categorizer:
+    def __init__(self,object_name,src_bucket_name,dest_bucket_name,src_download_dir,thumbnails_dir,s3_man,db_manager):
         self.db_manager = db_manager
         self.object_name = object_name
         self.mime_type = ""
@@ -19,28 +19,32 @@ class photo_extraction():
         self.dest_bucket_name = dest_bucket_name
         self.src_download_dir = src_download_dir
         self.thumbnails_dir = thumbnails_dir
-        self.minio_url = minio_url
+        self.s3_man = s3_man
         self.local_file_path=""
         self.photo_meta = {}
-        self.start_image_extraction()
+        self.start_face_categorizer()
 
-    def start_image_extraction(self):
-        self.download_image_file()
-        self.validate_photo_mime_type()
-        self.register_photo_to_db()
-        self.extract_thumbnails()
-        self.upload_thumbnails()
-        self.promote_photo_bucket()
-
-    def download_image_file(self):
-        logging.info('Downloading image {}'.format(self.object_name))   
-        client = Minio(self.minio_url,None,secure=False)   # Create client with anonymous access.
-        self.local_file_path = self.src_download_dir+"/"+self.object_name
-        try:
-            client.fget_object(self.src_bucket_name, self.object_name,self.local_file_path)
-        except Exception as err:
-            logging.error(err)
-            logging.error("error downloading photo :" +self.object_name +  " from bucket "+self.imageBucket)
+    def start_face_categorizer(self):
+        persons =[]
+        logging.info("download thumbnail {}".format(self.object_name))
+        self.validate_photo_mime_type() #Validate mimie type on thumbnail
+        local_src_path = self.s3_man.download_object(self.src_bucket_name,self.object_name,self.thumbnails_dir) #Download thumbnail
+        logging.info("lading thumbnail {} to recognition".format(self.object_name))
+        todo_thumbnail = face_recognition.load_image_file(str(local_src_path))
+        todo_thumbnail_encoding = face_recognition.face_encodings(todo_thumbnail)[0]
+        logging.info("starting face categorizetion")
+        persons = self.db_manager.fetch_all_persons()   #Fetch all persons from db
+        for person in persons:                          #Iterate persons for compare purposes
+            logging.info("checking thumbnail with person: {} ".format(person["_id"]))
+            for thumbnail in person["thumbnails"]:      #Download persons thumbnails
+                logging.info("downloading thumbnail: {} for person: {}".format(thumbnail,person["_id"]))
+                #Run compare 
+                    #encode new thumbnail
+                    #TODO:person_thumbnail = face_recognition.load_image_file("biden.jpg")
+                    #TODO:person_thumbnail_encoding = face_recognition.face_encodings(known_image)[0]
+                    #compare with original
+                    #TODO:results = face_recognition.compare_faces([biden_encoding], unknown_encoding)
+        #Create new Person doc || Link thumbnail to person
 
     def validate_photo_mime_type(self):
         extensions = {".jpg",".jpeg", ".png", ".gif"}
@@ -79,7 +83,7 @@ class photo_extraction():
                 logging.error(e)
                 logging.error("error downloading photo : {} to bucket {}".format(["image",self.dest_bucket_name]))
 
-            thumbnail_id = self.register_thumbnail_to_db(file)
+            thumbnail_id = self.register_thumbnail_to_db(file,self.photo_meta)
             self.db_manager.link_thumbnail_to_photo(thumbnail_id,self.photo_meta["_id"])
 
     def register_photo_to_db(self):
@@ -91,10 +95,10 @@ class photo_extraction():
         photo_id = self.db_manager.register_photo(self.photo_meta)
         self.photo_meta["_id"] = photo_id
     
-    def register_thumbnail_to_db(self,object_name):
+    def register_thumbnail_to_db(self,object_name,parent_photo_meta):
         logging.info("Registering thumbnail to db")
         on_boarding_time = str(datetime.utcnow())
-        thumbnail_meta={"thumbnail_object":object_name,"on_boarding_time":on_boarding_time}
+        thumbnail_meta={"thumbnail_object":object_name,"on_boarding_time":on_boarding_time,"parent_id":parent_photo_meta["_id"]}
         logging.info(json.dumps(thumbnail_meta))
         return self.db_manager.register_thumbnail(thumbnail_meta,self.photo_meta)
     

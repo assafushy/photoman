@@ -5,10 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Python: Face Processor",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/data-processing/face-categorizer/main.py",
+      "console": "integratedTerminal",
+      "args": [
+        "-e",
+        "{\"EventName\":\"s3:ObjectCreated:Put\",\"Key\":\"thumbnails/3bc114d4-f802-44d4-bdbe-740dfd32818e.jpeg\",\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"minio:s3\",\"awsRegion\":\"\",\"eventTime\":\"2022-02-13T19:30:42.500Z\",\"eventName\":\"s3:ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"admin\"},\"requestParameters\":{\"principalId\":\"admin\",\"region\":\"\",\"sourceIPAddress\":\"10.42.2.39\"},\"responseElements\":{\"content-length\":\"0\",\"x-amz-request-id\":\"16D36F47A44E4AA4\",\"x-minio-deployment-id\":\"280668f5-b954-4764-b8ea-242228891bdd\",\"x-minio-origin-endpoint\":\"http://10.42.2.39:9000\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"Config\",\"bucket\":{\"name\":\"new-files\",\"ownerIdentity\":{\"principalId\":\"admin\"},\"arn\":\"arn:aws:s3:::new-files\"},\"object\":{\"key\":\"target.jpg\",\"size\":640757,\"eTag\":\"ce723304aa2c464398251be57346d480\",\"contentType\":\"image/jpeg\",\"userMetadata\":{\"content-type\":\"image/jpeg\"},\"sequencer\":\"16D36F47A9A8E798\"}},\"source\":{\"host\":\"10.42.2.39\",\"port\":\"\",\"userAgent\":\"MinIO (linux; amd64) minio-go/v7.0.21\"}}]}",
+        "-o",
+        "${workspaceFolder}/src",
+        "-m",
+        "localhost:30010",
+        "-d",
+        "localhost",
+        "-i",
+        "30015",
+        "-u",
+        "root",
+        "-p",
+        "gfObI1tOgE"
+      ]
+    },
+    {
       "name": "Python: Thumbnail Processor",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/recog-poc/main.py",
+      "program": "${workspaceFolder}/data-processing/recog-poc/main.py",
       "console": "integratedTerminal",
       "args": [
         "-e",

@@ -34,11 +34,11 @@ spec:
                         - name: message
                     container:
                       imagePullPolicy: Always
-                      image: assafushy/face-recognition:latest
+                      image: assafushy/face-recognition:0.0.2045530140
                       command: ["python3"]
                       args:
                         [
-                          "face-thumbnail-processor.py",
+                          "main.py",
                           "-e",
                           "{{inputs.parameters.message}}",
                           "-o",
@@ -46,9 +46,9 @@ spec:
                           "-m",
                           "minio.minio.svc.cluster.local:9000",
                           "-d",
-                          "mongodb.mongodb",
+                          "mongodb.mongodb.svc.cluster.local",
                           "-i",
-                          "30015",
+                          "27017",
                           "-u",
                           "root",
                           "-p",

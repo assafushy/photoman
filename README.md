@@ -74,6 +74,8 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
 ./mc policy set public minio/new-files
 ./mc mb minio/photos
 ./mc policy set public minio/photos
+./mc mb minio/thumbnails-todo
+./mc policy set public minio/thumbnails-todo
 ./mc mb minio/thumbnails
 ./mc policy set public minio/thumbnails
 ./mc ls minio

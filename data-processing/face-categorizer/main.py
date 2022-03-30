@@ -3,7 +3,8 @@ import json
 import logging
 
 from dbManager import db_manager
-from photo_extraction import photo_extraction
+from s3Manager import s3_manager
+from face_categorizer import face_categorizer
 
 def main(argv):
    amqp_event = ''
@@ -51,8 +52,9 @@ def main(argv):
    thumbnails_dir = "./thumbnails"
    dest_bucket_name = "thumbnails"
 
+   s3_man = s3_manager(minio_url,"","")
    db_man = db_manager(mongodb_host,mongodb_port,mongodb_user,mongodb_password)     
-   photo_extraction(object_name,bucket_name,dest_bucket_name,src_download_dir,thumbnails_dir,minio_url,db_man)
+   face_categorizer(object_name,bucket_name,dest_bucket_name,src_download_dir,thumbnails_dir,s3_man,db_man)
    
 if __name__ == '__main__':
    main(sys.argv)
