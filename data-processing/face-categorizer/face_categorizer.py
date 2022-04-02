@@ -25,26 +25,33 @@ class face_categorizer:
         self.start_face_categorizer()
 
     def start_face_categorizer(self):
+        thumbnail = self.db_manager.fetch_thumbnail_by_object_name(self.object_name)
+        thumbnail_id = thumbnail["_id"]
         persons =[]
         logging.info("download thumbnail {}".format(self.object_name))
         self.validate_photo_mime_type() #Validate mimie type on thumbnail
         local_src_path = self.s3_man.download_object(self.src_bucket_name,self.object_name,self.thumbnails_dir) #Download thumbnail
-        logging.info("lading thumbnail {} to recognition".format(self.object_name))
+        logging.info("laoding thumbnail {} to recognition".format(self.object_name))
         todo_thumbnail = face_recognition.load_image_file(str(local_src_path))
         todo_thumbnail_encoding = face_recognition.face_encodings(todo_thumbnail)[0]
         logging.info("starting face categorizetion")
         persons = self.db_manager.fetch_all_persons()   #Fetch all persons from db
         for person in persons:                          #Iterate persons for compare purposes
             logging.info("checking thumbnail with person: {} ".format(person["_id"]))
-            for thumbnail in person["thumbnails"]:      #Download persons thumbnails
-                logging.info("downloading thumbnail: {} for person: {}".format(thumbnail,person["_id"]))
-                #Run compare 
-                    #encode new thumbnail
-                    #TODO:person_thumbnail = face_recognition.load_image_file("biden.jpg")
-                    #TODO:person_thumbnail_encoding = face_recognition.face_encodings(known_image)[0]
-                    #compare with original
-                    #TODO:results = face_recognition.compare_faces([biden_encoding], unknown_encoding)
-        #Create new Person doc || Link thumbnail to person
+            for compare_thumbnail_id in person["thumbnails"]:      #Download persons thumbnails
+                logging.info("downloading thumbnail: {} for person: {}".format(compare_thumbnail_id,person["_id"]))
+                focused_thumbnail = self.db_manager.fetch_thumbnail_by_id(compare_thumbnail_id)
+                compare_thumbnail_path = self.s3_man.download_object("thumbnails",focused_thumbnail["thumbnail_object"],self.thumbnails_dir)
+                compared_thumbnail = face_recognition.load_image_file(compare_thumbnail_path) #Encode new thumbnail
+                compared_thumbnail_encoding = face_recognition.face_encodings(compared_thumbnail)[0]
+                results = face_recognition.compare_faces([todo_thumbnail_encoding], compared_thumbnail_encoding) #compare with original
+                if results[0] == True:
+                    logging.info("Found a match between - {} - {}".format(thumbnail_id,compared_thumbnail))
+                    self.db_manager.link_thumbnail_to_person(thumbnail_id,person["_id"]) #Link thumbnail to person
+                    return 1
+        self.db_manager.create_person(thumbnail_id) #Create new Person doc
+        
+        return 0
 
     def validate_photo_mime_type(self):
         extensions = {".jpg",".jpeg", ".png", ".gif"}
