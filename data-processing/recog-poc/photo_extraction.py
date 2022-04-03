@@ -95,7 +95,7 @@ class photo_extraction():
         logging.info("Registering thumbnail to db")
         on_boarding_time = str(datetime.utcnow())
         thumbnail_meta={"thumbnail_object":object_name,"on_boarding_time":on_boarding_time,"parent_id":parent_photo_meta["_id"]}
-        logging.info(json.dumps(thumbnail_meta))
+        logging.info(thumbnail_meta)
         return self.db_manager.register_thumbnail(thumbnail_meta,self.photo_meta)
     
     def promote_photo_bucket(self):

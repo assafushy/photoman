@@ -34,7 +34,7 @@ spec:
                         - name: message
                     container:
                       imagePullPolicy: Always
-                      image: assafushy/face-recognition:0.0.2045530140
+                      image: assafushy/face-recognition:0.0.2082881940
                       command: ["python3"]
                       args:
                         [

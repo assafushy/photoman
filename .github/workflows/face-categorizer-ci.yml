@@ -1,0 +1,40 @@
+name: "🚀 publish"
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    name: 🚀 publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📚 checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: echo docker-id
+        run: echo "::set-output name=docker-tag::0.0.$GITHUB_RUN_ID"
+        id: docker-id
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: assafushy/face-categorizer
+          tags: |
+            ${{steps.docker-id.outputs.docker-tag}}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./data-processing/face-categorizer
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            assafushy/face-categorizer:latest

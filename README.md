@@ -115,7 +115,7 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
 
   - [ ] setup an event source for new files
   ```
-    kubectl apply -f ./k8s-yaml/amqp-yaml/argo-amqp-eventsource.yaml -n argo-events
+    kubectl apply -f ./k8s-yaml/ampq-onboarding/argo-amqp-eventsource.yaml -n argo-events
   ```
   - [ ] configure a service account to handle the event
   ```
@@ -128,5 +128,5 @@ kubectl apply -n argo-events -f https://raw.githubusercontent.com/argoproj/argo-
   ```
   - [ ] deploy the event sensor
   ```
-    kubectl apply  -f ./k8s-yaml/amqp-yaml/argo-amqp-sensor.yaml  -n argo-events
+    kubectl apply  -f ./k8s-yaml/ampq-onboarding/argo-amqp-sensor.yaml  -n argo-events
   ```

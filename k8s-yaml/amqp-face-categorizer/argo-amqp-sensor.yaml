@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: new-files-sensor
+spec:
+  template:
+    serviceAccountName: argo-sensor-sa
+  dependencies:
+    - name: new-file-trigger
+      eventSourceName: new-files
+      eventName: new-files
+  triggers:
+    - template:
+        name: new-file-onboarding
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: file-onboarding
+              spec:
+                entrypoint: photoOnBoarding
+                arguments:
+                  parameters:
+                    - name: message
+                      # value will get overridden by the event payload
+                      value: hello world
+                templates:
+                  - name: photoOnBoarding
+                    inputs:
+                      parameters:
+                        - name: message
+                    container:
+                      imagePullPolicy: Always
+                      image: assafushy/face-recognition:0.0.2082881940
+                      command: ["python3"]
+                      args:
+                        [
+                          "main.py",
+                          "-e",
+                          "{{inputs.parameters.message}}",
+                          "-o",
+                          "./src",
+                          "-m",
+                          "minio.minio.svc.cluster.local:9000",
+                          "-d",
+                          "mongodb.mongodb.svc.cluster.local",
+                          "-i",
+                          "27017",
+                          "-u",
+                          "root",
+                          "-p",
+                          "gfObI1tOgE"
+                        ]
+          parameters:
+            - src:
+                dependencyName: new-file-trigger
+                dataKey: body
+              dest: spec.arguments.parameters.0.value

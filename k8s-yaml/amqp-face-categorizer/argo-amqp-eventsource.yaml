@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: new-files
+spec:
+  amqp:
+    new-files:
+      url: amqp://user:pass@rabbitmq.rabbit.svc.cluster.local:5672
+      jsonBody: true
+      exchangeName: new-file
+      exchangeType: direct
+      routingKey: "new-file"
+      connectionBackoff:
+        duration: 10s # duration in nanoseconds, or strings like "1s", "1m". following value is 10 seconds
+        steps: 5 # how many backoffs
+        factor: 2 # factor to increase on each step.
+        jitter: 0.2 # setting factor > 1 makes backoff exponential.
+      exchangeDeclare: #optional
+        durable: false
+        autoDelete: false
+        internal: false
+        noWait: false
+      queueDeclare: #optional
+        name: "new-files"
+        durable: true
+        autoDelete: true
+        exclusive: true
+        noWait: false
+      queueBind: #optional queue bind settings
+        noWait: false
+      consume: #optional consume settings
+        consumerTag: "argo-files-consumer"
+        autoAck: true
+        exclusive: false
+        noLocal: false
+        noWait: false
+      # username and password for authentication
+      # use secret selectors
+      # auth:
+      #   username:
+      #     name: rabbit-creds
+      #     key: username
+      #   password:
+      #     name: rabbit-creds
+      #     key: password
