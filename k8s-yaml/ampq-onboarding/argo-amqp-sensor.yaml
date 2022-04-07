@@ -34,7 +34,7 @@ spec:
                         - name: message
                     container:
                       imagePullPolicy: Always
-                      image: assafushy/face-recognition:0.0.2082881940
+                      image: assafushy/face-recognition:0.0.2086043658
                       command: ["python3"]
                       args:
                         [
@@ -52,7 +52,7 @@ spec:
                           "-u",
                           "root",
                           "-p",
-                          "gfObI1tOgE"
+                          "pass"
                         ]
           parameters:
             - src:

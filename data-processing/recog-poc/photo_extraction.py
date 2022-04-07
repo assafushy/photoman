@@ -102,7 +102,7 @@ class photo_extraction():
         logging.info('Promoting photo {}'.format(self.object_name))   
         client = Minio(self.minio_url,None,secure=False)   # Create client with anonymous access.
         try:
-            client.fput_object(bucket_name="photos",file_path="./target.jpeg",object_name=str(self.photo_meta["_id"]))
+            client.fput_object(bucket_name="photos",file_path=self.local_file_path,object_name=str(self.photo_meta["_id"])+self.mime_type)
             logging.info("Promotion suceeded --- deleteing photo from new files bucket")
             client.remove_object(self.src_bucket_name, self.object_name)
             logging.info("Deleted photo from new files bucket")
